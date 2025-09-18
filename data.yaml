@@ -1,0 +1,31 @@
+# train: ../train/images
+# val: ../valid/images
+# test: ../test/images
+
+# nc: 6
+# names: ['long sleeve top', 'short sleeve top', 'shorts', 'skirt', 'sleeveless', 'trousers']
+
+# roboflow:
+#   workspace: superaiyoyoo
+# test: ../test/images
+# train: ../train/images
+# val: ../valid/images
+
+names:
+- long sleeve top
+- short sleeve top 
+- shorts
+- shorts skirt
+- long skirt 
+- sleeveless
+- trousers
+nc: 8
+roboflow:
+  license: CC BY 4.0
+  project: search-clothes-ise3k
+  url: https://universe.roboflow.com/superaiyoyoo/search-clothes-ise3k/dataset/4
+  version: 4
+  workspace: superaiyoyoo
+test: ../test/images
+train: ../train/images
+val: ../valid/images

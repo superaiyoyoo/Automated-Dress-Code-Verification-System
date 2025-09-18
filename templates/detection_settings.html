@@ -1,0 +1,1027 @@
+{% extends "base.html" %}
+
+{% block title %}Detection Settings - Smart Campus Clothing Verification System{% endblock %}
+
+{% block content %}
+<!-- Settings Header -->
+<div class="settings-header">
+    <div class="settings-header-content">
+        <div class="settings-title-section">
+            <h1 class="settings-title">Detection Settings</h1>
+            <p class="settings-subtitle">Configure detection parameters and system behavior</p>
+        </div>
+        <div class="settings-actions">
+            <button class="btn btn-outline-secondary settings-btn">
+                <i class="fas fa-undo me-2"></i>Reset to Defaults
+            </button>
+            <button class="btn btn-primary settings-btn">
+                <i class="fas fa-save me-2"></i>Save Settings
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Detection Thresholds -->
+<div class="settings-section">
+    <div class="settings-card">
+        <div class="settings-card-header">
+            <div class="settings-card-title">
+                <i class="fas fa-sliders-h settings-icon"></i>
+                Detection Thresholds
+            </div>
+            <div class="settings-card-description">
+                Configure confidence levels and detection sensitivity
+            </div>
+        </div>
+        <div class="settings-card-body">
+            <div class="settings-grid">
+                <div class="settings-group">
+                    <h6 class="settings-group-title">Confidence Thresholds</h6>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="personConfidence">Person Detection Confidence</label>
+                            <span class="setting-value" id="personConfidenceValue">0.50</span>
+                        </div>
+                        <input type="range" class="setting-range" id="personConfidence" min="0.1" max="0.9" step="0.05" value="0.5">
+                        <small class="setting-help">Lower values detect more people but may include false positives</small>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="keypointConfidence">Keypoint Confidence</label>
+                            <span class="setting-value" id="keypointConfidenceValue">0.50</span>
+                        </div>
+                        <input type="range" class="setting-range" id="keypointConfidence" min="0.1" max="0.9" step="0.05" value="0.5">
+                        <small class="setting-help">Minimum confidence for pose keypoints to be used in analysis</small>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="fastDetectionConf">Fast Detection Mode Confidence</label>
+                            <span class="setting-value" id="fastDetectionConfValue">0.40</span>
+                        </div>
+                        <input type="range" class="setting-range" id="fastDetectionConf" min="0.2" max="0.8" step="0.05" value="0.4">
+                        <small class="setting-help">Used for quick zone checks to skip empty frames</small>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h6 class="settings-group-title">IoU Thresholds</h6>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="iouThreshold">Non-Maximum Suppression (NMS) IoU</label>
+                            <span class="setting-value" id="iouThresholdValue">0.0005</span>
+                        </div>
+                        <input type="range" class="setting-range" id="iouThreshold" min="0.0005" max="0.5" step="0.0005" value="0.0005">
+                        <small class="setting-help">Lower values reduce overlapping detections</small>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="overlapThreshold">Person Overlap Threshold</label>
+                            <span class="setting-value" id="overlapThresholdValue">0.10</span>
+                        </div>
+                        <input type="range" class="setting-range" id="overlapThreshold" min="0.05" max="0.5" step="0.01" value="0.1">
+                        <small class="setting-help">Threshold for handling overlapping person tracks</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tracking Settings -->
+<div class="settings-section">
+    <div class="settings-card">
+        <div class="settings-card-header">
+            <div class="settings-card-title">
+                <i class="fas fa-route settings-icon"></i>
+                Tracking Settings
+            </div>
+            <div class="settings-card-description">
+                Configure person tracking and identity management
+            </div>
+        </div>
+        <div class="settings-card-body">
+            <div class="settings-grid">
+                <div class="settings-group">
+                    <h6 class="settings-group-title">Tracking Parameters</h6>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="minTrackingFrames">Minimum Tracking Frames Before Cropping</label>
+                            <span class="setting-value" id="minTrackingFramesValue">5</span>
+                        </div>
+                        <input type="range" class="setting-range" id="minTrackingFrames" min="1" max="20" step="1" value="5">
+                        <small class="setting-help">Person must be tracked for this many frames before first crop is saved</small>
+                    </div>
+                    <!-- Identity Similarity field temporarily disabled - no corresponding config variable
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="identitySimilarity">Identity Similarity Threshold</label>
+                            <span class="setting-value" id="identitySimilarityValue">0.85</span>
+                        </div>
+                        <input type="range" class="setting-range" id="identitySimilarity" min="0.5" max="0.95" step="0.05" value="0.85">
+                        <small class="setting-help">Minimum similarity to confirm same person identity across frames</small>
+                    </div>
+                    -->
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="resumeFrames">Resume After Non-Overlap Frames</label>
+                            <span class="setting-value" id="resumeFramesValue">3</span>
+                        </div>
+                        <input type="range" class="setting-range" id="resumeFrames" min="1" max="10" step="1" value="3">
+                        <small class="setting-help">Resume tracking after this many non-overlapping frames</small>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="maxPauseFrames">Maximum Pause Frames</label>
+                            <span class="setting-value" id="maxPauseFramesValue">30</span>
+                        </div>
+                        <input type="range" class="setting-range" id="maxPauseFrames" min="10" max="100" step="5" value="30">
+                        <small class="setting-help">Force crop if paused longer than this many frames</small>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h6 class="settings-group-title">ID Management</h6>
+                    <div class="setting-toggle">
+                        <div class="toggle-item">
+                            <label class="toggle-label" for="noReuseIds">
+                                <span class="toggle-text">Never reuse external IDs</span>
+                                <span class="toggle-description">Prevent ID conflicts by never reusing previously assigned IDs</span>
+                            </label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="toggle-input" id="noReuseIds" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-toggle">
+                        <div class="toggle-item">
+                            <label class="toggle-label" for="newIdAfterOverlap">
+                                <span class="toggle-text">Assign new ID after overlap</span>
+                                <span class="toggle-description">Create new ID instead of resuming after overlap</span>
+                            </label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="toggle-input" id="newIdAfterOverlap" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="retireFrames">Track Retire Frames</label>
+                            <span class="setting-value" id="retireFramesValue">20</span>
+                        </div>
+                        <input type="range" class="setting-range" id="retireFrames" min="5" max="50" step="5" value="20">
+                        <small class="setting-help">Frames after which missing tracks are retired</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Settings -->
+<div class="settings-section">
+    <div class="settings-card">
+            <div class="settings-card-header">
+            <div class="settings-card-title">
+                <i class="fas fa-tachometer-alt settings-icon"></i>
+                Performance Optimization
+                <button id="perfInfoBtn" type="button" class="btn btn-sm btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#perfInfoModal" title="Show frame diagram">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Info</span>
+                </button>
+            </div>
+            <div class="settings-card-description">
+                Optimize system performance and processing speed
+            </div>
+        </div>
+        <div class="settings-card-body">
+            <div class="settings-grid">
+                <div class="settings-group">
+                    <h6 class="settings-group-title">Frame Processing</h6>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="processEveryN">Process Every N Frames</label>
+                            <span class="setting-value" id="processEveryNValue">5</span>
+                        </div>
+                        <input type="range" class="setting-range" id="processEveryN" min="1" max="10" step="1" value="5">
+                        <small class="setting-help">Skip frames for better performance (1 = process all frames)</small>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="maxProcessingFPS">Target Maximum Processing FPS</label>
+                            <span class="setting-value" id="maxProcessingFPSValue">20</span>
+                        </div>
+                        <input type="range" class="setting-range" id="maxProcessingFPS" min="5" max="60" step="5" value="20">
+                        <small class="setting-help">Target processing speed limit</small>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="detectionCheckInterval">Detection Check Interval</label>
+                            <span class="setting-value" id="detectionCheckIntervalValue">5</span>
+                        </div>
+                        <input type="range" class="setting-range" id="detectionCheckInterval" min="1" max="20" step="1" value="5">
+                        <small class="setting-help">Check for people in zones every N frames</small>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h6 class="settings-group-title">Optimization Flags</h6>
+                    <div class="setting-toggle">
+                        <div class="toggle-item">
+                            <label class="toggle-label" for="realTimeMode">
+                                <span class="toggle-text">Enable real-time optimizations</span>
+                                <span class="toggle-description">Apply optimizations for real-time processing</span>
+                            </label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="toggle-input" id="realTimeMode" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-toggle">
+                        <div class="toggle-item">
+                            <label class="toggle-label" for="skipNoDetections">
+                                <span class="toggle-text">Skip frames when no people in cropping zones</span>
+                                <span class="toggle-description">Improve performance by skipping empty frames</span>
+                            </label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="toggle-input" id="skipNoDetections" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-toggle">
+                        <div class="toggle-item">
+                            <label class="toggle-label" for="fastDetectionMode">
+                                <span class="toggle-text">Use fast detection mode for zone checks</span>
+                                <span class="toggle-description">Use faster detection for initial zone scanning</span>
+                            </label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="toggle-input" id="fastDetectionMode" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-toggle">
+                        <div class="toggle-item">
+                            <label class="toggle-label" for="asyncDisplay">
+                                <span class="toggle-text">Enable async display operations</span>
+                                <span class="toggle-description">Use asynchronous operations for display updates</span>
+                            </label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="toggle-input" id="asyncDisplay" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cropping Settings -->
+<div class="settings-section">
+    <div class="settings-card">
+        <div class="settings-card-header">
+            <div class="settings-card-title">
+                <i class="fas fa-crop settings-icon"></i>
+                Cropping & Quality Settings
+            </div>
+            <div class="settings-card-description">
+                Configure image cropping parameters and quality requirements
+            </div>
+        </div>
+        <div class="settings-card-body">
+            <div class="settings-grid">
+                <div class="settings-group">
+                    <h6 class="settings-group-title">Pose Requirements</h6>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="minKeypointsFull">Minimum Keypoints for Full Body</label>
+                            <span class="setting-value" id="minKeypointsFullValue">12</span>
+                        </div>
+                        <input type="range" class="setting-range" id="minKeypointsFull" min="8" max="17" step="1" value="12">
+                        <small class="setting-help">Minimum pose keypoints required for full body detection</small>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="minKeypointsPartial">Minimum Keypoints for Partial Body</label>
+                            <span class="setting-value" id="minKeypointsPartialValue">8</span>
+                        </div>
+                        <input type="range" class="setting-range" id="minKeypointsPartial" min="5" max="12" step="1" value="8">
+                        <small class="setting-help">Minimum pose keypoints required for partial body detection</small>
+                    </div>
+                    <div class="setting-toggle">
+                        <div class="toggle-item">
+                            <label class="toggle-label" for="requireGoodPose">
+                                <span class="toggle-text">Require good pose quality for cropping</span>
+                                <span class="toggle-description">Only crop images with high-quality pose detection</span>
+                            </label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="toggle-input" id="requireGoodPose" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-toggle">
+                        <div class="toggle-item">
+                            <label class="toggle-label" for="strictCroppingArea">
+                                <span class="toggle-text">Use strict cropping area validation</span>
+                                <span class="toggle-description">Apply strict validation for cropping area boundaries</span>
+                            </label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="toggle-input" id="strictCroppingArea" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h6 class="settings-group-title">Image Quality</h6>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="croppingQuality">Cropping Quality Threshold</label>
+                            <span class="setting-value" id="croppingQualityValue">0.70</span>
+                        </div>
+                        <input type="range" class="setting-range" id="croppingQuality" min="0.3" max="0.9" step="0.05" value="0.7">
+                        <small class="setting-help">Minimum quality score required for saving cropped images</small>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="cropPadding">Crop Padding Ratio</label>
+                            <span class="setting-value" id="cropPaddingValue">0.10</span>
+                        </div>
+                        <input type="range" class="setting-range" id="cropPadding" min="0.05" max="0.3" step="0.05" value="0.1">
+                        <small class="setting-help">Additional padding around detected person for cropping</small>
+                    </div>
+                    <div class="setting-toggle">
+                        <div class="toggle-item">
+                            <label class="toggle-label" for="saveFirstLastOnly">
+                                <span class="toggle-text">Save only first and last seen images</span>
+                                <span class="toggle-description">Reduce storage by saving only entry and exit images</span>
+                            </label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="toggle-input" id="saveFirstLastOnly" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-toggle">
+                        <div class="toggle-item">
+                            <label class="toggle-label" for="fullBodyPriority">
+                                <span class="toggle-text">Prioritize full body crops over partial body</span>
+                                <span class="toggle-description">Prefer full body images when both are available</span>
+                            </label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="toggle-input" id="saveFullBodyPriority" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Info Modal -->
+<div class="modal fade" id="perfInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>Frame Processing Diagram</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img id="perfInfoImage" src="/api/temp-frames/frame_diagram.jpg" alt="Frame Diagram" style="width: 100%; height: auto; border-radius: 8px; border: 1px solid #e9ecef;" onerror="this.style.display='none'; document.getElementById('perfInfoFallback').style.display='block';">
+                <div id="perfInfoFallback" class="alert alert-warning mt-3" style="display: none;">
+                    Could not load diagram from temp_frames. Ensure file exists at temp_frames/frame_diagram.jpg.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load current settings on page load
+    loadCurrentSettings();
+    
+    // Settings management functions
+    function loadCurrentSettings() {
+        fetch('/api/settings/detection')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showNotification('Error loading settings: ' + data.error, 'error');
+                    return;
+                }
+                
+                // Update all form elements with current values
+                updateFormWithSettings(data);
+                showNotification('Settings loaded successfully', 'success');
+            })
+            .catch(error => {
+                console.error('Error loading settings:', error);
+                showNotification('Failed to load settings', 'error');
+            });
+    }
+    
+    function formatValue(value, inputId) {
+        const numValue = parseFloat(value);
+        
+        // Special formatting for very small numbers like IOU threshold
+        if (inputId === 'iouThreshold' && numValue < 0.01) {
+            return numValue.toFixed(4);
+        }
+        // For most other values, use 2 decimal places
+        else if (numValue < 1) {
+            return numValue.toFixed(2);
+        }
+        // For integer values (like frame counts), show no decimals
+        else if (Number.isInteger(numValue)) {
+            return numValue.toString();
+        }
+        // Default to 2 decimal places
+        else {
+            return numValue.toFixed(2);
+        }
+    }
+    
+    function updateFormWithSettings(settings) {
+        // Update range inputs and their display values
+        Object.keys(settings).forEach(key => {
+            const input = document.getElementById(key);
+            const valueSpan = document.getElementById(key + 'Value');
+            
+            if (input && settings[key] !== undefined) {
+                if (input.type === 'range') {
+                    input.value = settings[key];
+                    if (valueSpan) {
+                        valueSpan.textContent = formatValue(settings[key], key);
+                    }
+                } else if (input.type === 'checkbox' && input.classList.contains('toggle-input')) {
+                    input.checked = settings[key];
+                }
+            }
+        });
+    }
+    
+    function saveSettings() {
+        const settingsData = collectSettingsData();
+        
+        // Show loading state
+        const saveBtn = document.querySelector('.settings-btn.btn-primary');
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+        saveBtn.disabled = true;
+        
+        fetch('/api/settings/detection', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(settingsData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showNotification('Error saving settings: ' + data.error, 'error');
+            } else {
+                showNotification('Settings saved successfully! System will use new values.', 'success');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving settings:', error);
+            showNotification('Failed to save settings', 'error');
+        })
+        .finally(() => {
+            // Restore button state
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        });
+    }
+    
+    function resetToDefaults() {
+        if (!confirm('Are you sure you want to reset all settings to their default values?')) {
+            return;
+        }
+        
+        // Show loading state
+        const resetBtn = document.querySelector('.settings-btn.btn-outline-secondary');
+        const originalText = resetBtn.innerHTML;
+        resetBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Resetting...';
+        resetBtn.disabled = true;
+        
+        fetch('/api/settings/detection/reset', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showNotification('Error resetting settings: ' + data.error, 'error');
+            } else {
+                showNotification('Settings reset to defaults successfully!', 'success');
+                // Reload settings to update the form
+                setTimeout(loadCurrentSettings, 500);
+            }
+        })
+        .catch(error => {
+            console.error('Error resetting settings:', error);
+            showNotification('Failed to reset settings', 'error');
+        })
+        .finally(() => {
+            // Restore button state
+            resetBtn.innerHTML = originalText;
+            resetBtn.disabled = false;
+        });
+    }
+    
+    function collectSettingsData() {
+        const settings = {};
+        
+        // Collect range input values
+        const rangeInputs = document.querySelectorAll('input[type="range"]');
+        rangeInputs.forEach(input => {
+            settings[input.id] = parseFloat(input.value);
+        });
+        
+        // Collect checkbox values
+        const checkboxInputs = document.querySelectorAll('input.toggle-input[type="checkbox"]');
+        checkboxInputs.forEach(input => {
+            settings[input.id] = input.checked;
+        });
+        
+        return settings;
+    }
+    
+    function showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            max-width: 500px;
+        `;
+        
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+    
+    // Attach event listeners to buttons
+    document.querySelector('.settings-btn.btn-primary').addEventListener('click', saveSettings);
+    document.querySelector('.settings-btn.btn-outline-secondary').addEventListener('click', resetToDefaults);
+
+    // Update range value displays
+    const ranges = document.querySelectorAll('input[type="range"]');
+    ranges.forEach(range => {
+        const valueSpan = document.getElementById(range.id + 'Value');
+        if (valueSpan) {
+            // Update on input
+            range.addEventListener('input', function() {
+                valueSpan.textContent = formatValue(this.value, this.id);
+            });
+        }
+    });
+
+    // Add smooth animations to settings cards
+    const settingsCards = document.querySelectorAll('.settings-card');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    settingsCards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+
+    // Add hover effects to toggle switches
+    const toggleSwitches = document.querySelectorAll('.toggle-switch');
+    toggleSwitches.forEach(toggle => {
+        toggle.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+        });
+        
+        toggle.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
+</script>
+
+<style>
+/* Settings Page Styling */
+.settings-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.settings-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.settings-title-section {
+    flex: 1;
+    min-width: 300px;
+}
+
+.settings-title {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 0.5rem 0;
+}
+
+.settings-subtitle {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin: 0;
+    font-weight: 400;
+}
+
+.settings-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.settings-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.settings-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.settings-btn.btn-primary {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    border-color: #2980b9;
+}
+
+.settings-btn.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.settings-btn.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+}
+
+/* Settings Sections */
+.settings-section {
+    margin-bottom: 2rem;
+}
+
+.settings-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.settings-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.settings-card-header {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.settings-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+}
+
+.settings-icon {
+    color: #3498db;
+    margin-right: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.settings-card-description {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.settings-card-body {
+    padding: 2rem;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.settings-group-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* Setting Items */
+.setting-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.setting-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.setting-label label {
+    font-weight: 500;
+    color: #2c3e50;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.setting-value {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-width: 50px;
+    text-align: center;
+}
+
+.setting-range {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #e9ecef;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+.setting-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3);
+    transition: all 0.3s ease;
+}
+
+.setting-range::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+.setting-range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3);
+    transition: all 0.3s ease;
+}
+
+.setting-range::-moz-range-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+.setting-help {
+    color: #6c757d;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* Toggle Switches */
+.setting-toggle {
+    margin-bottom: 1rem;
+}
+
+.toggle-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.toggle-item:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+}
+
+.toggle-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    cursor: pointer;
+    flex: 1;
+    margin: 0;
+}
+
+.toggle-text {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 0.95rem;
+}
+
+.toggle-description {
+    color: #6c757d;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 24px;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.toggle-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #ccc;
+    border-radius: 24px;
+    transition: all 0.3s ease;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-input:checked + .toggle-slider {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.toggle-input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+.toggle-input:focus + .toggle-slider {
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .settings-header {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .settings-header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .settings-title {
+        font-size: 1.75rem;
+    }
+    
+    .settings-actions {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .settings-card-body {
+        padding: 1.5rem;
+    }
+    
+    .settings-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .toggle-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .toggle-switch {
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 480px) {
+    .settings-header {
+        padding: 1rem;
+    }
+    
+    .settings-card-body {
+        padding: 1rem;
+    }
+    
+    .setting-label {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .setting-value {
+        align-self: flex-end;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,1010 @@
+{% extends "base.html" %}
+
+{% block title %}Video Management - Smart Campus Clothing Verification System{% endblock %}
+
+{% block content %}
+<!-- Page Header (aligned with Detection Settings design) -->
+<div class="settings-header">
+    <div class="settings-header-content">
+        <div class="settings-title-section">
+            <h1 class="settings-title">Video Management</h1>
+            <p class="settings-subtitle">Upload videos, configure zones, and manage the library</p>
+        </div>
+        <div class="settings-actions">
+            <button class="btn btn-primary settings-btn" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                <i class="fas fa-plus me-2"></i>Upload Video
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Section -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cloud-upload-alt me-2"></i>
+                    Video Upload
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="file-upload-area" id="fileUploadArea">
+                    <i class="fas fa-cloud-upload-alt fs-1 text-muted mb-3"></i>
+                    <h5>Drag and drop video files here</h5>
+                    <p class="text-muted">or <a href="#" class="text-primary">browse to select files</a></p>
+                    <small class="text-muted">Supported formats: MP4, AVI, MOV</small>
+                </div>
+                
+                <!-- Upload Progress Container -->
+                <div id="uploadProgress" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Upload Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="defaultLocation" class="form-label">Default Location</label>
+                    <input type="text" class="form-control form-control-sm" id="defaultLocation" 
+                           value="5G Lab" readonly>
+                </div>
+                <div class="mb-3">
+                    <label for="defaultDescription" class="form-label">Default Description</label>
+                    <textarea class="form-control form-control-sm" id="defaultDescription" rows="2" 
+                              placeholder="Optional description"></textarea>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Zone Configuration -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-eye me-2"></i>
+                    Zone Display
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Zone Legend -->
+                <div class="alert alert-info mb-3 py-2">
+                    <h6 style="font-size: 0.85rem;"><i class="fas fa-palette me-2"></i>Zone Color Legend:</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <span class="badge bg-success me-2">■</span>
+                            <div class="d-inline-block" style="font-size: 0.75rem;">
+                                <strong>Green:</strong> Entry Zone<br>
+                                <small class="text-muted" style="font-size: 0.65rem;">Student entry area for initial detection and tracking</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <span class="badge bg-primary me-2">■</span>
+                            <div class="d-inline-block" style="font-size: 0.75rem;">
+                                <strong>Blue:</strong> Cropping Zone<br>
+                                <small class="text-muted" style="font-size: 0.65rem;">Cropping and processing clothing classification</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Zone Image Display -->
+                <div class="canvas-container mb-3">
+                    <img id="zoneImage" src="/api/zone-image/test_video_1_zones.jpg" 
+                         style="width: 100%; max-width: 800px; border: 2px solid #dee2e6; border-radius: 8px;"
+                         alt="Zone Configuration" onerror="this.style.display='none'; document.getElementById('noZoneMessage').style.display='block';">
+                    <div id="noZoneMessage" style="display: none; text-align: center; padding: 100px; background: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px;">
+                        <i class="fas fa-image text-muted" style="font-size: 3em;"></i>
+                        <p class="text-muted mt-3">No zone image available</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Zone Statistics
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Zone Statistics -->
+                <div class="zone-stats-container">
+                    <div class="zone-item entry-zone">
+                        <div class="zone-icon">
+                            <i class="fas fa-door-open"></i>
+                        </div>
+                        <div class="zone-info">
+                            <div class="zone-number" id="entryZoneCount">1</div>
+                            <div class="zone-label">Entry Zone</div>
+                            <div class="zone-description">Student entry area for initial detection and tracking</div>
+                        </div>
+                    </div>
+                    <div class="zone-item cropping-zone">
+                        <div class="zone-icon">
+                            <i class="fas fa-crop"></i>
+                        </div>
+                        <div class="zone-info">
+                            <div class="zone-number" id="croppingZoneCount">2</div>
+                            <div class="zone-label">Cropping Zone</div>
+                            <div class="zone-description">Cropping and processing clothing classification</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Zone Information Panel -->
+                <div class="mt-3">
+                    <div class="alert alert-info py-2">
+                        <h6 class="mb-2" style="font-size: 0.85rem;"><i class="fas fa-info-circle me-2"></i>Zone Functions:</h6>
+                        <ul class="mb-0" style="font-size: 0.75rem;">
+                            <li><strong>Entry Zone:</strong> Monitors student entry points for initial person detection and tracking initialization</li>
+                            <li><strong>Cropping Zone:</strong> Performs clothing classification by cropping detected persons and analyzing clothing items</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Video Library -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-video me-2"></i>
+                    Video Library
+                </h5>
+                <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm" style="width: auto;">
+                        <option>All Videos</option>
+                        <option>Processing</option>
+                        <option>Completed</option>
+                        <option>Failed</option>
+                    </select>
+                    <button class="btn btn-sm btn-outline-success" id="refreshVideosBtn" title="Refresh video library">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="videoLibraryTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 30%;">Video Name</th>
+                                <th style="width: 10%;">Duration</th>
+                                <th style="width: 15%;">Upload Time</th>
+                                <th style="width: 12%;">Status</th>
+                                <th style="width: 10%;">Location</th>
+                                <th style="width: 8%;">Detection</th>
+                                <th style="width: 8%;">Violation</th>
+                                <th style="width: 7%;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Video data will be loaded dynamically by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Video</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="videoFile" class="form-label">Video File</label>
+                        <input type="file" class="form-control" id="videoFile" accept="video/*">
+                    </div>
+                    <div class="mb-3">
+                        <label for="videoName" class="form-label">Video Name</label>
+                        <input type="text" class="form-control" id="videoName" placeholder="Optional custom name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="videoLocation" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="videoLocation" value="5G Lab">
+                    </div>
+                    <div class="mb-3">
+                        <label for="videoDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="videoDescription" rows="3" placeholder="Optional description or notes"></textarea>
+                    </div>
+                    <div class="form-check">
+                        
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Upload Video</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Professional Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white border-0">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span id="errorModalTitle">Operation Failed</span>
+                </h5>
+            </div>
+            <div class="modal-body p-4">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-circle bg-danger bg-opacity-10 p-3">
+                            <i class="fas fa-exclamation-triangle text-danger fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1" style="min-width: 0;">
+                        <h6 class="fw-bold mb-2" id="errorModalSubtitle" style="word-break: break-word;">Unable to complete the requested action</h6>
+                        <p class="text-muted mb-3" id="errorModalMessage" style="word-break: break-word; white-space: pre-wrap;">
+                            An unexpected error occurred. Please try again later.
+                        </p>
+                        <div class="alert alert-light border-start border-4 border-info mb-0" id="errorModalSuggestion">
+                            <small class="text-muted">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                <strong>Suggestion:</strong> <span id="errorSuggestionText" style="word-break: break-word;">Please contact support if this issue persists.</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Close
+                </button>
+                <button type="button" class="btn btn-primary" id="errorModalActionBtn" style="display: none;">
+                    <i class="fas fa-redo me-1"></i>Try Again
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Professional Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-success text-white border-0">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span id="successModalTitle">Success</span>
+                </h5>
+            </div>
+            <div class="modal-body p-4">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                            <i class="fas fa-check-circle text-success fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1" style="min-width: 0;">
+                        <h6 class="fw-bold mb-2" id="successModalSubtitle" style="word-break: break-word;">Operation completed successfully</h6>
+                        <p class="text-muted mb-0" id="successModalMessage" style="word-break: break-word; white-space: pre-wrap;">
+                            Your request has been processed successfully.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-1"></i>Continue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Professional Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-warning text-dark border-0">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <span id="confirmationModalTitle">Confirm Action</span>
+                </h5>
+            </div>
+            <div class="modal-body p-4">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
+                            <i class="fas fa-trash-alt text-warning fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1" style="min-width: 0;">
+                        <h6 class="fw-bold mb-2" id="confirmationModalSubtitle" style="word-break: break-word;">Are you sure you want to proceed?</h6>
+                        <p class="text-muted mb-3" id="confirmationModalMessage" style="word-break: break-word; white-space: pre-wrap;">
+                            This action cannot be undone. Please confirm if you want to continue.
+                        </p>
+                        <div class="alert alert-light border-start border-4 border-danger mb-0" id="confirmationModalWarning">
+                            <small class="text-muted">
+                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                <strong>Warning:</strong> <span id="confirmationWarningText" style="word-break: break-word;">This action is permanent and cannot be reversed.</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmationModalActionBtn">
+                    <i class="fas fa-trash me-1"></i>Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Socket.IO for real-time updates -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+<!-- Custom video management script -->
+<script src="{{ url_for('static', filename='js/video-management.js') }}"></script>
+<style>
+/* Settings-style header reused for consistency */
+.settings-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    border: 1px solid #e9ecef;
+}
+
+.card { border: 1px solid #e9ecef !important; box-shadow: 0 4px 6px rgba(0,0,0,0.07) !important; background: #ffffff !important; }
+.card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.12) !important; }
+.card-header { border-bottom: 1px solid #e9ecef !important; background-color: #ffffff !important; }
+
+.settings-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.settings-title-section {
+    flex: 1;
+    min-width: 300px;
+}
+
+.settings-title {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 0.5rem 0;
+}
+
+.settings-subtitle {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin: 0;
+    font-weight: 400;
+}
+
+.settings-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.settings-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.settings-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.settings-btn.btn-primary {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    border-color: #2980b9;
+}
+
+.settings-btn.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.settings-btn.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .settings-header { padding: 1.5rem; margin-bottom: 1.5rem; }
+    .settings-header-content { flex-direction: column; text-align: center; gap: 1rem; }
+    .settings-title { font-size: 1.75rem; }
+    .settings-actions { justify-content: center; width: 100%; }
+}
+
+@media (max-width: 480px) {
+    .settings-header { padding: 1rem; }
+}
+
+/* Video Details Modal Specific Styles */
+.video-details-modal .modal-content {
+    border: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    border-radius: 20px;
+    overflow: hidden;
+    background: #ffffff;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.video-details-modal .modal-dialog {
+    max-width: 900px;
+    margin: 2rem auto;
+    width: calc(100% - 2rem);
+    height: fit-content;
+    max-height: calc(100vh - 4rem);
+}
+
+.video-details-modal .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 1.5rem 2rem 1rem 2rem;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.video-details-modal .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+    backdrop-filter: blur(10px);
+}
+
+.video-details-modal .modal-header > * {
+    position: relative;
+    z-index: 1;
+}
+
+.video-details-modal .modal-body {
+    padding: 0;
+    background: #f8fafc;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+.video-header-section {
+    background: white;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.video-thumbnail-container {
+    width: 100px;
+    height: 75px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f1f5f9;
+    border: 2px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.video-thumbnail-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.video-thumbnail-placeholder {
+    color: #64748b;
+    font-size: 1.5rem;
+}
+
+.video-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.25rem 0;
+    line-height: 1.3;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.video-subtitle {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.video-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.25px;
+    white-space: nowrap;
+}
+
+.status-completed {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.status-processing {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.status-pending {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+    box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+}
+
+.status-failed {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.info-sections {
+    padding: 1.5rem 2rem 2rem 2rem;
+}
+
+.info-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.info-section:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e1;
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #334155;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title i {
+    font-size: 1rem;
+    color: #667eea;
+    flex-shrink: 0;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.25px;
+    margin-bottom: 0.375rem;
+    line-height: 1.2;
+}
+
+.info-value {
+    font-size: 0.875rem;
+    color: #1e293b;
+    font-weight: 500;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.4;
+}
+
+.info-value.large {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.info-value.description {
+    font-style: italic;
+    color: #64748b;
+    line-height: 1.4;
+    max-height: 3.6em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.metric-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    transition: all 0.2s ease;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.metric-card:hover {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.metric-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    display: block;
+    line-height: 1;
+}
+
+.metric-number.detections {
+    color: #3b82f6;
+}
+
+.metric-number.violations {
+    color: #ef4444;
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.25px;
+    line-height: 1.2;
+}
+
+.modal-footer-custom {
+    background: white;
+    padding: 1rem 2rem;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.btn-custom {
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: none;
+    font-size: 0.875rem;
+    line-height: 1.2;
+}
+
+.btn-custom:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-secondary-custom {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.clickable-video-name {
+    color: #667eea;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-weight: 600;
+}
+
+.clickable-video-name:hover {
+    color: #764ba2;
+    text-decoration: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .video-details-modal .modal-dialog {
+        margin: 1rem;
+        max-width: none;
+        width: calc(100% - 2rem);
+        max-height: calc(100vh - 2rem);
+    }
+    
+    .video-header-section {
+        padding: 1rem 1.5rem;
+    }
+    
+    .info-sections {
+        padding: 1rem 1.5rem 1.5rem 1.5rem;
+    }
+    
+    .info-section {
+        padding: 1rem;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .video-title {
+        font-size: 1.125rem;
+    }
+    
+    .video-subtitle {
+        font-size: 0.8rem;
+    }
+    
+    .video-status-badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .metric-number {
+        font-size: 1.5rem;
+    }
+    
+    .modal-footer-custom {
+        padding: 0.75rem 1.5rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .btn-custom {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .video-details-modal .modal-dialog {
+        margin: 0.5rem;
+        width: calc(100% - 1rem);
+        max-height: calc(100vh - 1rem);
+    }
+    
+    .video-header-section {
+        padding: 0.75rem 1rem;
+    }
+    
+    .info-sections {
+        padding: 0.75rem 1rem 1rem 1rem;
+    }
+    
+    .video-title {
+        font-size: 1rem;
+    }
+    
+    .video-thumbnail-container {
+        width: 80px;
+        height: 60px;
+    }
+}
+
+/* Ensure modal stays within viewport */
+.video-details-modal .modal-dialog {
+    overflow: hidden;
+}
+
+.video-details-modal .modal-content {
+    overflow: hidden;
+}
+
+/* Fix for very long text */
+.video-title,
+.video-subtitle,
+.info-value {
+    hyphens: auto;
+    word-wrap: break-word;
+}
+
+/* Ensure scrollable content */
+.video-details-modal .modal-body {
+    max-height: calc(90vh - 200px);
+}
+</style>
+
+<!-- Video Details Modal -->
+<div class="modal fade video-details-modal" id="videoDetailsModal" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Header -->
+            <div class="modal-header text-white">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="fas fa-play-circle me-2"></i>
+                    <span id="videoDetailsModalTitle">Video Information</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Video Header Section -->
+                <div class="video-header-section">
+                    <div class="row align-items-center g-3">
+                        <div class="col-auto">
+                            <div class="video-thumbnail-container">
+                                <img id="modalVideoThumbnail" src="" alt="Video thumbnail" style="display: none;">
+                                <div id="modalNoThumbnail" class="video-thumbnail-placeholder">
+                                    <i class="fas fa-video"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h3 class="video-title" id="modalVideoName">Loading...</h3>
+                            <p class="video-subtitle" id="modalCustomName">Loading...</p>
+                        </div>
+                        <div class="col-auto">
+                            <span id="modalStatus" class="video-status-badge status-pending">
+                                <i class="fas fa-clock"></i>
+                                <span>Pending</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Information Sections -->
+                <div class="info-sections">
+                    <!-- Basic Information -->
+                    <div class="info-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Basic Information</span>
+                        </h4>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Duration</div>
+                                <div class="info-value" id="modalDuration">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">File Size</div>
+                                <div class="info-value" id="modalFileSize">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Location</div>
+                                <div class="info-value" id="modalLocation">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Upload Time</div>
+                                <div class="info-value" id="modalUploadTime">-</div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="info-item">
+                                <div class="info-label">Description</div>
+                                <div class="info-value description" id="modalDescription">No description provided</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processing Information -->
+                    <div class="info-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-cogs"></i>
+                            <span>Processing Details</span>
+                        </h4>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Processing Time</div>
+                                <div class="info-value large" id="modalProcessingTime">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Completion Time</div>
+                                <div class="info-value" id="modalCompletionTime">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detection Results -->
+                    <div class="info-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Detection Results</span>
+                        </h4>
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <div class="metric-card">
+                                    <span class="metric-number detections" id="modalDetections">0</span>
+                                    <div class="metric-label">Total Detections</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="metric-card">
+                                    <span class="metric-number violations" id="modalViolations">0</span>
+                                    <div class="metric-label">Violations Found</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-custom btn-secondary-custom" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    <span>Close</span>
+                </button>
+                <button type="button" class="btn btn-custom btn-primary-custom" id="modalDownloadBtn" style="display: none;">
+                    <i class="fas fa-download me-1"></i>
+                    <span>Download Results</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

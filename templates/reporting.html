@@ -1,0 +1,935 @@
+{% extends "base.html" %}
+
+{% block title %}Reporting - Smart Campus Clothing Verification System{% endblock %}
+
+{% block content %}
+<!-- Compact Blue Analytics Dashboard Header -->
+<div class="analytics-dashboard-header mb-4">
+    <div class="dashboard-gradient-bg">
+        <div class="container-fluid">
+            <div class="row align-items-center mb-3">
+                <div class="col-md-6">
+                    <div class="dashboard-title-section">
+                        <h1 class="dashboard-title">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Analytics Dashboard
+                        </h1>
+                        <p class="dashboard-subtitle">Smart Campus Clothing Verification System Reports</p>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="dashboard-actions d-flex gap-2 justify-content-end">
+                        <button class="btn btn-dashboard-outline">
+                            <i class="fas fa-filter me-2"></i>Advanced Filters
+                        </button>
+                        <button class="btn btn-dashboard-solid" id="exportReportBtn">
+                            <i class="fas fa-download me-2"></i>Export Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Compact Filter Row -->
+            <div class="row dashboard-filters">
+                <div class="col-lg-3 col-md-6 mb-2">
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-calendar me-1"></i>Date Range
+                        </label>
+                        <div class="date-picker-container">
+                            <input type="text" class="form-control dashboard-select" id="dateRangePicker" placeholder="Select date range" readonly style="color: rgba(255, 255, 255, 0.9);">
+                            <i class="fas fa-calendar-alt date-picker-icon"></i>
+                        </div>
+                        <div class="date-picker-dropdown" id="datePickerDropdown" style="display: none;">
+                            <div class="date-picker-header">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="prevMonth">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span id="currentMonthYear"></span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="nextMonth">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="date-picker-body">
+                                <div class="date-picker-weekdays">
+                                    <div class="weekday">Sun</div>
+                                    <div class="weekday">Mon</div>
+                                    <div class="weekday">Tue</div>
+                                    <div class="weekday">Wed</div>
+                                    <div class="weekday">Thu</div>
+                                    <div class="weekday">Fri</div>
+                                    <div class="weekday">Sat</div>
+                                </div>
+                                <div class="date-picker-days" id="datePickerDays"></div>
+                            </div>
+                            <div class="date-picker-footer">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="clearDateRange">Clear</button>
+                                <button type="button" class="btn btn-sm btn-primary" id="applyDateRange">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-2">
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-video me-1"></i>Video Source
+                        </label>
+                        <select class="form-select dashboard-select" id="videoFilter">
+                            <option value="all">All Videos</option>
+                            <!-- Video options will be loaded dynamically -->
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-2">
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-flag me-1"></i>Review Status
+                        </label>
+                        <select class="form-select dashboard-select" id="statusFilter">
+                            <option value="all">All Status</option>
+                            <option value="pending">Pending Review</option>
+                            <option value="verified">Verified</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-2">
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Violation Type
+                        </label>
+                        <select class="form-select dashboard-select" id="violationFilter">
+                            <option value="all">All Types</option>
+                            <option value="shorts">Shorts</option>
+                            <option value="shorts skirt">Shorts Skirt</option>
+                            <option value="sleeveless">Sleeveless</option>
+                            <option value="no violations">No Violations</option>
+                        </select>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Compact Action Buttons Row -->
+            <div class="row">
+                <div class="col-12 text-end">
+                    <div class="filter-actions d-flex gap-2 justify-content-end">
+                        <button class="btn btn-dashboard-reset" id="resetFiltersBtn">
+                            <i class="fas fa-redo me-1"></i>Reset
+                        </button>
+                        <button class="btn btn-dashboard-apply" id="applyFiltersBtn">
+                            <i class="fas fa-search me-1"></i>Apply
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Simple Blue Stats Cards -->
+<div id="student-report" class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card stats-blue">
+            <div class="icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="number" id="totalDetectionsCount">0</div>
+            <div class="label">Total Detections</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card stats-blue">
+            <div class="icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="number" id="violationsFoundCount">0</div>
+            <div class="label">Violations Found</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card stats-blue">
+            <div class="icon">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div class="number" id="pendingReviewCount">0</div>
+            <div class="label">Pending Review</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card stats-blue">
+            <div class="icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="number" id="violationRatePercent">0%</div>
+            <div class="label">Violation Rate</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts and Analytics -->
+<div class="row mb-4">
+    <div class="col-lg-4 mb-3">
+        <div class="card report-card">
+            <div class="card-header">
+                <h5 class="mb-0 report-section-title">Top Clothing Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container-small">
+                    <canvas id="topClothingChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-3">
+        <div class="card report-card">
+            <div class="card-header">
+                <h5 class="mb-0 report-section-title">Bottom Clothing Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container-small">
+                    <canvas id="bottomClothingChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-3">
+        <div class="card report-card">
+            <div class="card-header">
+                <h5 class="mb-0 report-section-title">Review Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container-small">
+                    <canvas id="reviewStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Reports Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    Student Clothing Report
+                </h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-success" id="refreshReportBtn" title="Refresh Report">
+                        <i class="fas fa-sync-alt me-1"></i>Refresh
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" id="csvExportBtn">
+                        <i class="fas fa-file-csv me-1"></i>CSV
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" id="pdfExportBtn">
+                        <i class="fas fa-file-pdf me-1"></i>PDF
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" id="jsonExportBtn">
+                        <i class="fas fa-file-alt me-1"></i>JSON
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Person ID</th>
+                                <th>Image</th>
+                                <th>Date & Time</th>
+                                <th>Top Clothing</th>
+                                <th>Bottom Clothing</th>
+                                <th>Description</th>
+                                <th>Similarity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table data will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Reports -->
+<div class="row">
+    <div class="col-lg-6 mb-3">
+        <div class="card quick-reports-card">
+            <div class="card-header quick-reports-header">
+                <h5 class="mb-0 d-flex align-items-center">
+                    <div class="quick-reports-icon-wrapper me-3">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div>
+                        <span class="quick-reports-title">Quick Reports</span>
+                        <div class="quick-reports-subtitle">Generate instant reports and visualizations</div>
+                    </div>
+                </h5>
+            </div>
+            <div class="card-body quick-reports-body">
+                <div class="quick-reports-grid">
+                    <button class="btn quick-report-btn violations-btn" id="violationsSummaryBtn">
+                        <div class="report-btn-icon violations-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="report-btn-content">
+                            <span class="report-btn-title">Violations Summary</span>
+                            <span class="report-btn-description">Detailed violation analysis</span>
+                        </div>
+                    </button>
+                    
+                    <button class="btn quick-report-btn pending-btn" id="pendingReviewBtn">
+                        <div class="report-btn-icon pending-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="report-btn-content">
+                            <span class="report-btn-title">Pending Review</span>
+                            <span class="report-btn-description">Items awaiting review</span>
+                        </div>
+                    </button>
+                    
+                    <button class="btn quick-report-btn detection-btn" id="detectionVisualizationBtn">
+                        <div class="report-btn-icon detection-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="report-btn-content">
+                            <span class="report-btn-title">Detection Visual</span>
+                            <span class="report-btn-description">Visual data insights</span>
+                        </div>
+                    </button>
+                    
+                    <button class="btn quick-report-btn chart-btn" id="chartVisualizationBtn">
+                        <div class="report-btn-icon chart-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="report-btn-content">
+                            <span class="report-btn-title">Chart Visualization</span>
+                            <span class="report-btn-description">Comprehensive charts</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-3">
+        <div class="card export-options-card">
+            <div class="card-header export-header">
+                <h5 class="mb-0 d-flex align-items-center">
+                    <div class="export-icon-wrapper me-3">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <div>
+                        <span class="export-title">Export Options</span>
+                        <small class="export-subtitle d-block">Download your data in multiple formats</small>
+                    </div>
+                </h5>
+            </div>
+            <div class="card-body export-body">
+                <!-- Filter Status Indicator -->
+                <div id="exportFilterIndicator" class="mb-4" style="display: none;">
+                    <div class="filter-indicator-card">
+                        <div class="filter-indicator-content">
+                            <i class="fas fa-filter filter-indicator-icon"></i>
+                            <div class="filter-indicator-text">
+                                <span class="filter-indicator-title">Filtered Export</span>
+                                <span class="filter-indicator-subtitle">Only filtered data will be exported</span>
+                            </div>
+                            <span class="filter-record-badge" id="filteredRecordCount">0 records</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="export-section mb-4">
+                    <label class="export-section-label">
+                        <i class="fas fa-file-export me-2"></i>
+                        Choose Export Format
+                    </label>
+                    <div class="export-format-grid">
+                        <div class="export-format-option">
+                            <input class="form-check-input export-radio" type="radio" name="exportFormat" id="exportCSV" checked>
+                            <label class="export-format-label" for="exportCSV">
+                                <div class="format-icon csv-icon">
+                                    <i class="fas fa-file-csv"></i>
+                                </div>
+                                <div class="format-content">
+                                    <span class="format-title">CSV</span>
+                                    <span class="format-description">Spreadsheet format</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="export-format-option">
+                            <input class="form-check-input export-radio" type="radio" name="exportFormat" id="exportPDF">
+                            <label class="export-format-label" for="exportPDF">
+                                <div class="format-icon pdf-icon">
+                                    <i class="fas fa-file-pdf"></i>
+                                </div>
+                                <div class="format-content">
+                                    <span class="format-title">PDF</span>
+                                    <span class="format-description">Report format</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="export-format-option">
+                            <input class="form-check-input export-radio" type="radio" name="exportFormat" id="exportJSON">
+                            <label class="export-format-label" for="exportJSON">
+                                <div class="format-icon json-icon">
+                                    <i class="fas fa-file-code"></i>
+                                </div>
+                                <div class="format-content">
+                                    <span class="format-title">JSON</span>
+                                    <span class="format-description">Data format</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="export-section mb-4">
+                    <label class="export-section-label">
+                        <i class="fas fa-cog me-2"></i>
+                        Export Options
+                    </label>
+                    <div class="export-option-card">
+                        <input class="form-check-input" type="checkbox" id="includeImages" checked>
+                        <label class="export-option-label" for="includeImages">
+                            <div class="option-content">
+                                <div class="option-main">
+                                    <i class="fas fa-images me-2"></i>
+                                    Include evidence images
+                                </div>
+                                <div class="option-description">
+                                    Embed detection images in the export
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <button class="btn export-button w-100" id="generateExportBtn">
+                    <div class="export-button-content">
+                        <i class="fas fa-download export-button-icon"></i>
+                        <span class="export-button-text" id="exportButtonText">Generate Export</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Enhanced Export Options Styling */
+.export-options-card {
+    border: none;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.export-options-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+}
+
+.export-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 20px 25px;
+}
+
+.export-icon-wrapper {
+    width: 45px;
+    height: 45px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.export-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+}
+
+.export-subtitle {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.85rem;
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+.export-body {
+    padding: 25px;
+    background: #f8f9fa;
+}
+
+.filter-indicator-card {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-radius: 12px;
+    border: 1px solid #90caf9;
+    overflow: hidden;
+}
+
+.filter-indicator-content {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+}
+
+.filter-indicator-icon {
+    color: #1976d2;
+    font-size: 1.1rem;
+    margin-right: 15px;
+}
+
+.filter-indicator-text {
+    flex: 1;
+}
+
+.filter-indicator-title {
+    display: block;
+    font-weight: 600;
+    color: #1565c0;
+    font-size: 0.95rem;
+}
+
+.filter-indicator-subtitle {
+    display: block;
+    color: #1976d2;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+.filter-record-badge {
+    background: #1976d2;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.export-section {
+    margin-bottom: 25px;
+}
+
+.export-section-label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.export-format-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.export-format-option {
+    position: relative;
+}
+
+.export-radio {
+    position: absolute;
+    opacity: 0;
+}
+
+.export-format-label {
+    display: flex;
+    align-items: center;
+    padding: 15px 18px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.export-format-label:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+    transform: translateY(-1px);
+}
+
+.export-radio:checked + .export-format-label {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f0fe 100%);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.format-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 1.2rem;
+}
+
+.csv-icon {
+    background: linear-gradient(135deg, #43a047 0%, #66bb6a 100%);
+    color: white;
+}
+
+.pdf-icon {
+    background: linear-gradient(135deg, #e53935 0%, #ef5350 100%);
+    color: white;
+}
+
+.json-icon {
+    background: linear-gradient(135deg, #fb8c00 0%, #ffa726 100%);
+    color: white;
+}
+
+.format-content {
+    flex: 1;
+}
+
+.format-title {
+    display: block;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+}
+
+.format-description {
+    display: block;
+    color: #6c757d;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+.export-option-card {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 15px 18px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.export-option-card:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.export-option-card:has(input:checked) {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f0fe 100%);
+}
+
+.export-option-label {
+    flex: 1;
+    margin-left: 12px;
+    cursor: pointer;
+}
+
+.option-content {
+    flex: 1;
+}
+
+.option-main {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+}
+
+.option-description {
+    color: #6c757d;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+.export-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 15px 25px;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.export-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    color: white;
+}
+
+.export-button:active {
+    transform: translateY(0);
+}
+
+.export-button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.export-button-icon {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+.export-button-text {
+    font-weight: 600;
+}
+
+.export-button:disabled {
+    background: #6c757d;
+    transform: none;
+    box-shadow: none;
+}
+
+.export-button:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Enhanced Quick Reports Styling */
+.quick-reports-card {
+    border: none;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.quick-reports-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+}
+
+.quick-reports-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 20px 25px;
+}
+
+.quick-reports-icon-wrapper {
+    width: 45px;
+    height: 45px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.quick-reports-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+}
+
+.quick-reports-subtitle {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.85rem;
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+.quick-reports-body {
+    padding: 25px;
+    background: #f8f9fa;
+}
+
+.quick-reports-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.quick-report-btn {
+    display: flex;
+    align-items: center;
+    padding: 18px 20px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+    color: inherit;
+    text-decoration: none;
+}
+
+.quick-report-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    color: inherit;
+    text-decoration: none;
+}
+
+.quick-report-btn:active {
+    transform: translateY(0);
+}
+
+.violations-btn:hover {
+    border-color: #dc3545;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+}
+
+.pending-btn:hover {
+    border-color: #ffc107;
+    background: linear-gradient(135deg, #fffbf0 0%, #fff3cd 100%);
+}
+
+.detection-btn:hover {
+    border-color: #28a745;
+    background: linear-gradient(135deg, #f1f8e9 0%, #d4edda 100%);
+}
+
+.chart-btn:hover {
+    border-color: #17a2b8;
+    background: linear-gradient(135deg, #e8f4fd 0%, #d1ecf1 100%);
+}
+
+.report-btn-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.violations-icon {
+    background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+    color: white;
+}
+
+.pending-icon {
+    background: linear-gradient(135deg, #ffc107 0%, #f39c12 100%);
+    color: white;
+}
+
+.detection-icon {
+    background: linear-gradient(135deg, #28a745 0%, #27ae60 100%);
+    color: white;
+}
+
+.chart-icon {
+    background: linear-gradient(135deg, #17a2b8 0%, #3498db 100%);
+    color: white;
+}
+
+.report-btn-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.report-btn-title {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    margin-bottom: 3px;
+}
+
+.report-btn-description {
+    color: #6c757d;
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+/* Responsive adjustments for Quick Reports */
+@media (max-width: 768px) {
+    .quick-reports-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .quick-report-btn {
+        padding: 15px 18px;
+    }
+    
+    .report-btn-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+        margin-right: 12px;
+    }
+}
+</style>
+
+
+<!-- Person Details Modal -->
+<div class="modal fade" id="personDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">
+                    <i class="fas fa-user me-2"></i>Student Detection Details
+                </h6>
+                <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modalImageContainer">
+                    <!-- Image will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Close
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm" id="modalRejectBtn">
+                    <i class="fas fa-times me-1"></i>Reject
+                </button>
+                <button type="button" class="btn btn-outline-success btn-sm" id="modalVerifyBtn">
+                    <i class="fas fa-check me-1"></i>Verify
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include Chart.js if not already included in base template -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Include our filter functionality -->
+<script src="{{ url_for('static', filename='js/filters.js') }}"></script>
+
+<!-- Include export indicator functionality -->
+<script src="{{ url_for('static', filename='js/export-indicator.js') }}"></script>
+
+<!-- Include our reporting.js file -->
+<script src="{{ url_for('static', filename='js/reporting.js') }}"></script>
+
+<!-- Include quick reports functionality -->
+<script src="{{ url_for('static', filename='js/quick-reports.js') }}"></script>
+
+<!-- Include detection visualization functionality -->
+<script src="{{ url_for('static', filename='js/detection-visualization.js') }}"></script>
+{% endblock %}
